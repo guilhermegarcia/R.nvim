@@ -427,6 +427,10 @@ end
 ---@param type string
 M.insert = function(cmd, type)
     if vim.g.R_Nvim_status < 7 then return end
+    -- cut_json_str (C) does not unescape JSON, so each `\` in the Lua string
+    -- becomes `\\` after JSON serialization and stays doubled all the way to R.
+    -- Halving here restores the correct backslash count after the round-trip.
+    cmd = cmd:gsub("\\\\", "\\")
     cmd = cmd:gsub("'", "\018")
     cmd = cmd:gsub('"', "\019")
     M.send_to_nvimcom("E", "nvimcom:::nvim_insert(" .. cmd .. ", '" .. type .. "')")
